@@ -1,0 +1,55 @@
+#!/bin/bash
+
+az connectedmachine extension create \
+	--machine-name $ArcWinVMname \
+	--location $location \
+	--name 'AzureMonitorWindowsAgent' \
+	--resource-group "$Seed-Demo" \
+	--type "AzureMonitorWindowsAgent" \
+	--publisher "Microsoft.Azure.Monitor" \
+	--enable-auto-upgrade true
+
+# Create Data Collection Endpoint
+
+# create Log Analytics Custom Table
+
+# Create Data Collection Rule for the Arc enabled VM to collect Custom Text Logs
+ 
+
+
+
+# --------------- END OF FILE ---------------
+# setup the dependency agent on the Arc enabled VM
+az connectedmachine extension create \
+     --machine-name $ArcWinVMname \
+     --location $location \
+     --name 'DependencyAgentWindows' \
+     --resource-group "$Seed-Demo" \
+     --type "DependencyAgentWindows" \
+     --publisher "Microsoft.Azure.Monitoring.DependencyAgent" \
+     --settings "{\"enableAMA\": \"true\"}" \
+     --enable-auto-upgrade true
+
+# setup the Best Practice Assessment Platform on the Arc enabled VM
+az connectedmachine extension create \
+	--machine-name $ArcWinVMname \
+	--location $location \
+	--name 'assessmentplatform' \
+	--resource-group "$Seed-Demo" \
+	--type "assessmentplatform" \
+	--publisher "microsoft.serviceshub" \
+	--enable-auto-upgrade true
+
+# setup the Windows Server Best Practice Assessment on the Arc enabled VM
+az connectedmachine extension create \
+	--machine-name $ArcWinVMname \
+	--location $location \
+	--name 'windowsserverassessment' \
+	--resource-group "$Seed-Demo" \
+	--type "windowsserverassessment" \
+	--publisher "microsoft.serviceshub" \
+	--enable-auto-upgrade true
+     --settings "{\"isEnabled\": \"true\",\"addTaskOnInstallRequested\": \"true\",\"triggerRequested\": \"true\",\"triggerServerName\": \"$ArcWinVMname\",\"triggerLogAnalyticsWorkspaceFullId\": \"$LawResourceId\",\"triggerLogAnalyticsWorkspaceId\": \"$LawId\",\"triggerLogAnalyticsWorkspaceName\": \"$LAWname\"}" \
+
+# assess the patches on the Arc enabled VM
+az connectedmachine assess-patches -g "$Seed-Demo" -n $ArcWinVMname

@@ -1,0 +1,48 @@
+#!/bin/bash
+# Retrieve SubscriptionName
+subscriptionName=$(az account show --query name -o tsv)
+KVname=$(az deployment sub show --name "CoreDeploy-$Seed" --query properties.outputs.kvName.value -o tsv)
+
+# Create a service principal for the Arc resource group using a preferred name and role
+ArcSp_pwd=$(az ad sp create-for-rbac --display-name ArcDeploySP-$Seed --query password -o tsv)
+ArcSp_id=$(az ad sp list --filter "displayname eq 'ArcDeploySP-$Seed'" --query "[0].appId" -o tsv)
+
+# Assign the required roles to the Arc Service Principal
+az role assignment create --assignee $ArcSp_id --role "Azure Connected Machine Onboarding" --scope "//subscriptions/$MySubscriptionId/resourceGroups/$Seed-Demo"
+
+# Store the service principal credentials in the Key Vault
+az deployment group create \
+     --name "ArcSp_pwd-$Seed" \
+     --resource-group "$Seed-Demo" \
+     --template-file './src/SetSecret.bicep' \
+     --parameters \
+          KVname=$KVname \
+          SecretName='SPpwd' \
+          Secret=$ArcSp_pwd
+az deployment group create \
+     --name "ArcSp_id-$Seed" \
+     --resource-group "$Seed-Demo" \
+     --template-file './src/SetSecret.bicep' \
+     --parameters \
+          KVname=$KVname \
+          SecretName='SPid' \
+          Secret=$ArcSp_id
+
+echo $adminPassword
+# To onboard on Arc this VM: 
+#   1 - Open an RDP session on the VM
+#      Use the following credentials:
+#      Username: $adminUsername
+#      Password: $adminPassword
+#   2 - Run the output of the following command in a elevated powershell
+     echo "Invoke-WebRequest -Uri https://raw.githubusercontent.com/gderossilive/GuestConfiguration/refs/heads/main/Files/ArcForServer.ps1 \`
+          -OutFile 'c:\windows\temp\step1.ps1'; \`
+     powershell -File 'c:\windows\temp\step1.ps1' \` 
+          -SubscriptionId $MySubscriptionId  \`
+          -TenantId $MyTenantId  \`
+          -ResourceGroupName $Seed-Demo  \`
+          -Location $location  \`
+          -ServicePrincipalId $ArcSp_id  \`
+          -Password $ArcSp_pwd  \`
+          -EnableArcAutoupdate=1  \`
+          -EnableSSH=1"
