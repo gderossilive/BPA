@@ -1,6 +1,6 @@
 #!/bin/bash
 # Retrieve the vm names
-ArcWinVMname=$(az deployment sub show --name "CoreDeploy-$Seed" --query properties.outputs.winVMsName.value[0].name -o tsv)
+ArcWinVMname=$(az deployment sub show --name "CoreDeploy-$Seed" --query properties.outputs.srvVMsName.value[0].name -o tsv)
 ArcSqlVMname=$(az deployment sub show --name "CoreDeploy-$Seed" --query properties.outputs.sqlVMsName.value[0].name -o tsv)
 # build the list of VMs to be setup
 ArcWinlist="[\"$ArcWinVMname\"]"
@@ -53,7 +53,7 @@ az connectedmachine extension create \
      --resource-group "$Seed-Demo" \
      --type "CustomScriptExtension" \
      --publisher "Microsoft.Compute" \
-     --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/GuestConfiguration/refs/heads/main/Files/SqlServerSetupDSC.ps1' -OutFile 'c:\\windows\\\temp\\SqlServerSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\SqlServerSetupDSC.ps1  -Force \"}" \
+     --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/SqlServerSetupDSC.ps1' -OutFile 'c:\\windows\\\temp\\SqlServerSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\SqlServerSetupDSC.ps1  -Force \"}" \
      --enable-auto-upgrade true
 
 # Enable the LeastPrivilege feature flag on the SQL Server Arc enabled VM
@@ -85,7 +85,9 @@ az connectedmachine extension create \
      --resource-group "$Seed-Demo" \
      --type "CustomScriptExtension" \
      --publisher "Microsoft.Compute" \
-     --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/GuestConfiguration/refs/heads/main/Files/ADSetupDSC.ps1' $adminUsername $adminPassword $ArcWinVMname -OutFile 'c:\\windows\\\temp\\ADSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\ADSetupDSC.ps1  -Force \"}" \     --enable-auto-upgrade true
+     --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/ADSetupDSC.ps1' -OutFile 'c:\\windows\\\temp\\ADSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\ADSetupDSC.ps1 -username $adminUsername -password $adminPassword -serverName $ArcWinVMname -Force \"}" \
+     --enable-auto-upgrade true
+
 # RDP to the SQL Server VM via Arc
 echo $adminPassword
 az ssh arc --subscription $MySubscriptionId --resource-group "$Seed-Demo" --name $ArcSqlVMname --local-user gdradmin --rdp -- -o StrictHostKeyChecking=no

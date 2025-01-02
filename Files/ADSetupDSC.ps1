@@ -1,20 +1,20 @@
 param (
     # Domain admin credential (the local admin credential will be set to this one!)
     #! user user@domain.com for the user
-    [Parameter(Mandatory )] [string]
+    [Parameter(Mandatory )] [ValidateNotNullOrEmpty()][string]
     $username
     ,
-    [Parameter(Mandatory )] [string]
+    [Parameter(Mandatory )] [ValidateNotNullOrEmpty()][string]
     $password
     ,
-    [Parameter(Mandatory )] [string]
+    [Parameter(Mandatory )] [ValidateNotNullOrEmpty()][string]
     $serverName
 )
 
-$domainCred = new-object -typename System.Management.Automation.PSCredential `
-         -argumentlist $username, $password
-
 Install-Module -Name ActiveDirectoryDsc -Force
+
+$secpassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+$domainCred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secpassword
 
 # note: These steps need to be performed in an Administrator PowerShell session
 $cert = New-SelfSignedCertificate -Type DocumentEncryptionCertLegacyCsp -DnsName 'DscEncryptionCert' -HashAlgorithm SHA256
@@ -92,10 +92,12 @@ Configuration ADDomain_NewForest_Config
 }
 
 Write-Host "Generate DSC Configuration..."
-ADDomain_NewForest_Config -ConfigurationData $ConfigData .\ADDomain_NewForest_Config
+ADDomain_NewForest_Config -Credential $domainCred -ConfigurationData $ConfigData .\ADDomain_NewForest_Config
 
 Write-Host "Setting up LCM to decrypt credentials..."
 Set-DscLocalConfigurationManager .\ADDomain_NewForest_Config -Verbose
+
+Start-Sleep -Seconds 10
 
 Write-Host "Starting Configuration..."
 Start-DscConfiguration -Path .\ADDomain_NewForest_Config -Wait -Verbose -Force
