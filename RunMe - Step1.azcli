@@ -5,6 +5,7 @@
 # MyObjectId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 # MyTenantId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 # location=<your favorite location>
+# adminUsername=<your favorite admin username>
 # Refer to the .env.sample file for an example
 
 # import environment variables from .env file
@@ -19,8 +20,6 @@ az account set --subscription $MySubscriptionId # MCAPS tenant
 Seed=$(tr -dc 'a-z0-9' < /dev/urandom | head -c 6)
 echo "$Seed"
 
-# set the username and password for the admin user on the VMs
-adminUsername='gdradmin'
 # generate a random password choosing 7 characters from the alphabet a..z + A..Z + 0..9
 adminPassword=$(printf -v s '%s' {a..z} {A..Z} {0..9}; echo ${s:$((RANDOM % ${#s})):12} | base64)
 
@@ -39,5 +38,5 @@ az deployment sub create \
           MyObjectId=$MyObecjectId \
           adminUsername='gdradmin' \
           adminPassword=$adminPassword \
-          WinNum=0 \
+          WinNum=1 \
           SQLNum=1
