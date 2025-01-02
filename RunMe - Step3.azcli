@@ -85,12 +85,13 @@ az connectedmachine extension create \
      --resource-group "$Seed-Demo" \
      --type "CustomScriptExtension" \
      --publisher "Microsoft.Compute" \
-     --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/ADSetupDSC.ps1' -OutFile 'c:\\windows\\\temp\\ADSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\ADSetupDSC.ps1 -username $adminUsername -password $adminPassword -serverName $ArcWinVMname -Force \"}" \
+     --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/ADSetupDSC.ps1' -OutFile 'c:\\windows\\\temp\\ADSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\ADSetupDSC.ps1 -username $adminUsername -password $adminPassword -serverName $ArcWinVMname \"}" \
      --enable-auto-upgrade true
 
 # RDP to the SQL Server VM via Arc
 echo $adminPassword
 az ssh arc --subscription $MySubscriptionId --resource-group "$Seed-Demo" --name $ArcSqlVMname --local-user gdradmin --rdp -- -o StrictHostKeyChecking=no
+az ssh arc --subscription $MySubscriptionId --resource-group "$Seed-Demo" --name $ArcWinVMname --local-user gdradmin --rdp -- -o StrictHostKeyChecking=no
 
 
 
