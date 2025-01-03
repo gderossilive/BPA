@@ -27,7 +27,7 @@ adminPassword=$(az keyvault secret show --name "adminPassword" --vault-name "KV-
 ArcSp_id=$(az keyvault secret show --name "SPid" --vault-name "KV-$Seed" --query "value" -o tsv)
 ArcSp_pwd=$(az keyvault secret show --name "SPpwd" --vault-name "KV-$Seed" --query "value" -o tsv)
 
-ArcWinVMname=$(az deployment sub show --name "CoreDeploy-$Seed" --query properties.outputs.winVMsName.value[0].name -o tsv)
+ArcWinVMname=$(az deployment sub show --name "CoreDeploy-$Seed" --query properties.outputs.srvVMsName.value[0].name -o tsv)
 ArcSqlVMname=$(az deployment sub show --name "CoreDeploy-$Seed" --query properties.outputs.sqlVMsName.value[0].name -o tsv)
 
 # find the Application ID of the service principal

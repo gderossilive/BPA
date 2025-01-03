@@ -75,7 +75,10 @@ az sql server-arc extension feature-flag set --name LeastPrivilege --enable true
 #		  contentHash='ac94b0f0911522bb5bd83bb5c665acedb93b03714159cfd207e812c2556e36e4'
 
 # Create the policy assignment for the SQL Server Best Practices Assessment to configure it automatically
-az policy assignment create --name "SQLBestPracticesAssessmentAssignment" --scope "/subscriptions/$MySubscriptionId/resourceGroups/$Seed-Demo" --policy "/providers/Microsoft.Authorization/policyDefinitions/SQLBestPracticesAssessment"
+LawName=$(az deployment sub show --name "CoreDeploy-$Seed" --query properties.outputs.laWname -o tsv)
+az policy assignment create --scope "/subscriptions/$MySubscriptionId/resourceGroups/$Seed-Demo" \
+     --policy "/providers/Microsoft.Authorization/policyDefinitions/SQLBestPracticesAssessment" \
+     --params "{ \"effect\": \"DeployIfNotExists\", \"laWorkspaceId\": \"$LawName\", \"laWorkspaceLocation\": \"$location\", \"isEnabled\": \"$True\" }"
 
 ## -------- Setup Active Directory on the Arc enabled VM --------
 az connectedmachine extension create \
@@ -87,6 +90,10 @@ az connectedmachine extension create \
      --publisher "Microsoft.Compute" \
      --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/ADSetupDSC.ps1' -OutFile 'c:\\windows\\\temp\\ADSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\ADSetupDSC.ps1 -username $adminUsername -password $adminPassword -serverName $ArcWinVMname \"}" \
      --enable-auto-upgrade true
+
+# assess the patches on the Arc enabled VM
+az connectedmachine assess-patches -g "$Seed-Demo" -n $ArcWinVMname
+az connectedmachine assess-patches -g "$Seed-Demo" -n $ArcSqlVMname
 
 # RDP to the SQL Server VM via Arc
 echo $adminPassword
