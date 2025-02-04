@@ -58,6 +58,7 @@ az connectedmachine extension create \
      --enable-auto-upgrade true
 
 ## -------- Setup Active Directory on the Arc enabled VM --------
+#echo "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/ADSetupDSC.ps1' -OutFile 'c:\\windows\\\temp\\ADSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\ADSetupDSC.ps1 -username $adminUsername -password $adminPassword -serverName $ArcWinVMname \"}"
 az connectedmachine extension create \
      --machine-name $ArcWinVMname \
      --location $location \

@@ -21,6 +21,7 @@ Seed=$(tr -dc 'a-z0-9' < /dev/urandom | head -c 6)
 echo "$Seed"
 resourceGroupName="$Seed-Demo"
 
+adminUsername='gdradmin'
 # generate a random password choosing 7 characters from the alphabet a..z + A..Z + 0..9
 adminPassword=$(printf -v s '%s' {a..z} {A..Z} {0..9}; echo ${s:$((RANDOM % ${#s})):12} | base64)
 
@@ -37,7 +38,7 @@ az deployment sub create \
           location=$location \
           Seed=$Seed \
           MyObjectId=$MyObecjectId \
-          adminUsername='gdradmin' \
+          adminUsername=adminUsername \
           adminPassword=$adminPassword \
           WinNum=1 \
           SQLNum=1
