@@ -18,7 +18,7 @@ az deployment group create \
      --parameters \
           WorkspaceName=$LAWname \
           location=$location \
-          Seed=$Seed
+          Seed=$Seed \
 		  VMName=$ArcWinVMname
 
 # install the SQL Server extension on the Arc enabled VM

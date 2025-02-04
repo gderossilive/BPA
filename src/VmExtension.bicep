@@ -5,7 +5,7 @@ param type string
 param location string = resourceGroup().location
 param Settings object = {}
 
-resource VmExtension 'Microsoft.HybridCompute/machines/extensions@2024-09-10-preview' = {
+resource VmExtension 'Microsoft.HybridCompute/machines/extensions@2024-07-10' = {
   name:  '${vmName}/${VmExtensionName}'
   location: location
   properties: {
