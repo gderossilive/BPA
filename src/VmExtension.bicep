@@ -1,17 +1,19 @@
 param vmName string
+param VmExtensionName string = 'VmExtension' 
 param publisher string 
 param type string 
+param location string = resourceGroup().location
+param Settings object = {}
 
 resource VmExtension 'Microsoft.HybridCompute/machines/extensions@2024-09-10-preview' = {
-  name:  '${vmName}/VmExtension'
+  name:  '${vmName}/${VmExtensionName}'
+  location: location
   properties: {
     publisher: publisher
     type: type
     autoUpgradeMinorVersion: true
-    settings: {
-    }
-    protectedSettings: {
-    }
+    enableAutomaticUpgrade: true
+    settings: Settings
   }
 }
   
