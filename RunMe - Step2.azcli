@@ -13,7 +13,7 @@ az role assignment create --assignee $ArcSp_id --role "Azure Connected Machine O
 # Store the service principal credentials in the Key Vault
 az deployment group create \
      --name "ArcSp_pwd-$Seed" \
-     --resource-group "$Seed-Demo" \
+     --resource-group $resourceGroupName \
      --template-file './src/SetSecret.bicep' \
      --parameters \
           KVname=$KVname \
@@ -21,7 +21,7 @@ az deployment group create \
           Secret=$ArcSp_pwd
 az deployment group create \
      --name "ArcSp_id-$Seed" \
-     --resource-group "$Seed-Demo" \
+     --resource-group $resourceGroupName \
      --template-file './src/SetSecret.bicep' \
      --parameters \
           KVname=$KVname \
@@ -46,3 +46,6 @@ echo $adminPassword
           -Password $ArcSp_pwd  \`
           -EnableArcAutoupdate=1  \`
           -EnableSSH=1"
+
+#    3 - Update the Arc Agent to the latest version downloading it from  https://aka.ms/AzureConnectedMachineAgent
+#    4 - Verify the Arc Agent verion running the following command in powershell: azcmagent --version

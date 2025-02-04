@@ -1,10 +1,31 @@
 #!/bin/bash
 
+# Enable SQL Best Practice Assessment on the Arc enabled VM
+az sql vm update --enable-assessment true --workspace-name $LawName --workspace-rg $resourceGroupName -g $resourceGroupName --agent-rg $resourceGroupName -n $ArcSqlVMname
+
+# Enable Windows Best Practice Assessment on the Arc enabled VM
+## setup the API call to activate the SA benefits
+uri="https://management.azure.com/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.HybridCompute/machines/$ArcWinVMname/licenseProfiles/default?api-version=2023-10-03-preview"
+contentType="application/json"
+data="{\"location\": \"$location\", \"properties\": {\"softwareAssurance\": {\"softwareAssuranceCustomer\": true}}}"
+## Call the REST API to activate the SA benefits
+response=$(az rest --method PUT --uri $uri --headers "Content-Type=$contentType" --body "$data")
+## Check if the response is successful
+if [ $? -eq 0 ]; then
+	echo "$ArcWinVMname SA benefits activated"
+else
+	StatusCode=$(echo $response | python3 -c "import sys, json; response = json.load(sys.stdin); print(response['error']['code'])")
+	StatusException=$(echo $response | python3 -c "import sys, json; response = json.load(sys.stdin); print(response['error']['message'])")
+	echo "$ArcWinVMname StatusCode: $StatusCode StatusDescription: $StatusException"
+	echo "$ArcWinVMname StatusCode: $StatusCode StatusDescription: $StatusException" >> output.txt
+fi
+
+
 az connectedmachine extension create \
 	--machine-name $ArcWinVMname \
 	--location $location \
 	--name 'AzureMonitorWindowsAgent' \
-	--resource-group "$Seed-Demo" \
+	--resource-group $resourceGroupName \
 	--type "AzureMonitorWindowsAgent" \
 	--publisher "Microsoft.Azure.Monitor" \
 	--enable-auto-upgrade true
@@ -24,7 +45,7 @@ az connectedmachine extension create \
      --machine-name $ArcWinVMname \
      --location $location \
      --name 'DependencyAgentWindows' \
-     --resource-group "$Seed-Demo" \
+     --resource-group $resourceGroupName \
      --type "DependencyAgentWindows" \
      --publisher "Microsoft.Azure.Monitoring.DependencyAgent" \
      --settings "{\"enableAMA\": \"true\"}" \
@@ -35,7 +56,7 @@ az connectedmachine extension create \
 	--machine-name $ArcWinVMname \
 	--location $location \
 	--name 'assessmentplatform' \
-	--resource-group "$Seed-Demo" \
+	--resource-group $resourceGroupName \
 	--type "assessmentplatform" \
 	--publisher "microsoft.serviceshub" \
 	--enable-auto-upgrade true
@@ -45,11 +66,14 @@ az connectedmachine extension create \
 	--machine-name $ArcWinVMname \
 	--location $location \
 	--name 'windowsserverassessment' \
-	--resource-group "$Seed-Demo" \
+	--resource-group $resourceGroupName \
 	--type "windowsserverassessment" \
 	--publisher "microsoft.serviceshub" \
 	--enable-auto-upgrade true
      --settings "{\"isEnabled\": \"true\",\"addTaskOnInstallRequested\": \"true\",\"triggerRequested\": \"true\",\"triggerServerName\": \"$ArcWinVMname\",\"triggerLogAnalyticsWorkspaceFullId\": \"$LawResourceId\",\"triggerLogAnalyticsWorkspaceId\": \"$LawId\",\"triggerLogAnalyticsWorkspaceName\": \"$LAWname\"}" \
 
 # assess the patches on the Arc enabled VM
-az connectedmachine assess-patches -g "$Seed-Demo" -n $ArcWinVMname
+az connectedmachine assess-patches -g $resourceGroupName -n $ArcWinVMname
+
+
+az resource update --ids '//subscriptions/11004def-5ee3-4417-9560-89b475a99fb8/resourceGroups/xmsbht-Demo/providers/Microsoft.AzureArcData/SqlServerInstances/SQL-1' --set 'properties.monitoring.enabled=true' --api-version 2023-09-01-preview

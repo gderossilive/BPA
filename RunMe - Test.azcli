@@ -47,6 +47,7 @@ LAWname=$(az deployment sub show --name "CoreDeploy-$Seed" --query properties.ou
 
 echo "Client ID: $ArcSp_id
 Client Secret: $ArcSp_pwd 
+adminPassword: $adminPassword
 Tenant ID: $MyTenantId 
 Key Vault Name: $KVname 
 Log Analytics Workspace Name: $LAWname 

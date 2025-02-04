@@ -23,34 +23,35 @@ az role assignment create --assignee $ArcVmManagedIdentity \
 # Allow installing extensions without prompt
 az config set extension.use_dynamic_install=yes_without_prompt
 
-# Use the CustomScript extension on the Arc enabled VM to download the SQLServer ISO and extract it in the C:\SQLServer2022 folder 
+# Use the CustomScript extension on the Arc enabled VM to download the script will orchestrate the SQL Server installation 
 az connectedmachine extension create \
      --machine-name $ArcSqlVMname \
      --location $location \
      --name 'CustomScriptExtension' \
-     --resource-group "$Seed-Demo" \
+     --resource-group $resourceGroupName \
      --type "CustomScriptExtension" \
      --publisher "Microsoft.Compute" \
      --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/GuestConfiguration/refs/heads/main/Files/IsoSetup.ps1' -OutFile 'c:\\windows\\\temp\\IsoSetup.ps1' \"}" \
      --enable-auto-upgrade true
 
+# Use the CustomScript extension on the Arc enabled VM to setup the prerequisites for the SQL Server installation
 # echo "powershell -File 'c:\\windows\\\temp\\IsoSetup.ps1' -servicePrincipalClientId $ArcSp_id -servicePrincipalSecret $ArcSp_pwd -TenantId $MyTenantId -StorageAccountName $StorageAccountName -ContainerName $ContainerName -BlobName $BlobName -Force "
 az connectedmachine extension create \
      --machine-name $ArcSqlVMname \
      --location $location \
      --name 'CustomScriptExtension' \
-     --resource-group "$Seed-Demo" \
+     --resource-group $resourceGroupName \
      --type "CustomScriptExtension" \
      --publisher "Microsoft.Compute" \
      --settings "{\"commandToExecute\":\"powershell -File c:\\windows\\\temp\\IsoSetup.ps1 -servicePrincipalClientId $ArcSp_id -servicePrincipalSecret $ArcSp_pwd -TenantId $MyTenantId -StorageAccountName $StorageAccountName -ContainerName $ContainerName -BlobName $BlobName -Force \"}" \
      --enable-auto-upgrade true
 
-# Use the CustomScript extension on the Arc enabled VM to install SQL Server and its prerequisites for Best Practice Assessment
+# Use the CustomScript extension on the Arc enabled VM to install SQL Server and its prerequisites for Best Practice Assessment via Desired State Configuration (DSC)
 az connectedmachine extension create \
      --machine-name $ArcSqlVMname \
      --location $location \
      --name 'CustomScriptExtension' \
-     --resource-group "$Seed-Demo" \
+     --resource-group $resourceGroupName \
      --type "CustomScriptExtension" \
      --publisher "Microsoft.Compute" \
      --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/SqlServerSetupDSC.ps1' -OutFile 'c:\\windows\\\temp\\SqlServerSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\SqlServerSetupDSC.ps1  -Force \"}" \
@@ -59,15 +60,15 @@ az connectedmachine extension create \
 # Enable the LeastPrivilege feature flag on the SQL Server Arc enabled VM
 # az extension list -o table
 # az extension add --name arcdata
-az sql server-arc extension feature-flag set --name LeastPrivilege --enable true --resource-group "$Seed-Demo" --machine-name $ArcSqlVMname
+az sql server-arc extension feature-flag set --name LeastPrivilege --enable true --resource-group $resourceGroupName --machine-name $ArcSqlVMname
 
 # install the SQL Server extension on the Arc enabled VM
-#az connectedmachine extension create --machine-name $ArcSqlVMname --location $location --name "WindowsAgent.SqlServer" --resource-group "$Seed-Demo" --type "WindowsAgent.SqlServer" --publisher "Microsoft.AzureData" --settings "{\"SqlManagement\":{\"IsEnabled\":true}, \"LicenseType\":\"<License Type>\", \"ExcludedSqlInstances\":[]}"
+#az connectedmachine extension create --machine-name $ArcSqlVMname --location $location --name "WindowsAgent.SqlServer" --resource-group $resourceGroupName --type "WindowsAgent.SqlServer" --publisher "Microsoft.AzureData" --settings "{\"SqlManagement\":{\"IsEnabled\":true}, \"LicenseType\":\"<License Type>\", \"ExcludedSqlInstances\":[]}"
 
 # setup the GuestConfiguration extension on the Arc enabled VM to install SQL Server
 #az deployment group create \
 #	--name "SqlDscSetup-$Seed" \
-#	 --resource-group "$Seed-Demo" \
+#	 --resource-group $resourceGroupName \
 #	 --template-file './src/SQLInstallDSC.bicep' \
 #	 --parameters \
 #		  sqlServerName=$ArcSqlVMname \
@@ -85,20 +86,20 @@ az connectedmachine extension create \
      --machine-name $ArcWinVMname \
      --location $location \
      --name 'CustomScriptExtension' \
-     --resource-group "$Seed-Demo" \
+     --resource-group $resourceGroupName \
      --type "CustomScriptExtension" \
      --publisher "Microsoft.Compute" \
      --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/ADSetupDSC.ps1' -OutFile 'c:\\windows\\\temp\\ADSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\ADSetupDSC.ps1 -username $adminUsername -password $adminPassword -serverName $ArcWinVMname \"}" \
      --enable-auto-upgrade true
 
 # assess the patches on the Arc enabled VM
-az connectedmachine assess-patches -g "$Seed-Demo" -n $ArcWinVMname
-az connectedmachine assess-patches -g "$Seed-Demo" -n $ArcSqlVMname
+az connectedmachine assess-patches -g $resourceGroupName -n $ArcWinVMname
+az connectedmachine assess-patches -g $resourceGroupName -n $ArcSqlVMname
 
 # RDP to the SQL Server VM via Arc
 echo $adminPassword
-az ssh arc --subscription $MySubscriptionId --resource-group "$Seed-Demo" --name $ArcSqlVMname --local-user gdradmin --rdp -- -o StrictHostKeyChecking=no
-az ssh arc --subscription $MySubscriptionId --resource-group "$Seed-Demo" --name $ArcWinVMname --local-user gdradmin --rdp -- -o StrictHostKeyChecking=no
+az ssh arc --subscription $MySubscriptionId --resource-group $resourceGroupName --name $ArcSqlVMname --local-user gdradmin --rdp -- -o StrictHostKeyChecking=no
+az ssh arc --subscription $MySubscriptionId --resource-group $resourceGroupName --name $ArcWinVMname --local-user gdradmin --rdp -- -o StrictHostKeyChecking=no
 
 
 

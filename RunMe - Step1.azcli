@@ -19,12 +19,13 @@ az account set --subscription $MySubscriptionId # MCAPS tenant
 # Seed is a random string used to create unique names for the resources
 Seed=$(tr -dc 'a-z0-9' < /dev/urandom | head -c 6)
 echo "$Seed"
+resourceGroupName="$Seed-Demo"
 
 # generate a random password choosing 7 characters from the alphabet a..z + A..Z + 0..9
 adminPassword=$(printf -v s '%s' {a..z} {A..Z} {0..9}; echo ${s:$((RANDOM % ${#s})):12} | base64)
 
 # Create the resource group with the automatic SQL Server extension deployment tag set to PAYG
-az group create --name "$Seed-Demo" --location "$location" --tags "ArcSQLServerExtensionDeployment=PAYG"
+az group create --name $resourceGroupName --location "$location" --tags "ArcSQLServerExtensionDeployment=PAYG"
 
 # Create the hub&spoke infrastructure
 az deployment sub create \
