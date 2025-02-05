@@ -32,7 +32,7 @@ module assessmentplatform 'VmExtension.bicep' = {
 // Deploy windowsserverassessment extension
 module windowsserverassessment 'VmExtension.bicep' = {
   dependsOn: [assessmentplatform, AMA]
-  name: 'windowsserverassessment-${VMName}-${Seed}'
+  name: '${VMName}/windowsserverassessment'
   params: {
     vmName: VMName
     VmExtensionName: 'windowsserverassessment'
@@ -41,6 +41,7 @@ module windowsserverassessment 'VmExtension.bicep' = {
     Settings: {
       addTaskOnInstallRequested: true
       isEnabled: true
+      triggerServerName: VMName
       triggerLogAnalyticsWorkspaceFullId: LAW.id
       triggerLogAnalyticsWorkspaceId: LAW.properties.customerId
       triggerLogAnalyticsWorkspaceName: LAW.name
