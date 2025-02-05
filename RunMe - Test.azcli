@@ -23,6 +23,8 @@ fi
 read -p "Enter the Seed value: " Seed
 
 # find the secret value in the key vault
+adminUsername='gdradmin'
+resourceGroupName="$Seed-Demo"
 adminPassword=$(az keyvault secret show --name "adminPassword" --vault-name "KV-$Seed" --query "value" -o tsv)
 ArcSp_id=$(az keyvault secret show --name "SPid" --vault-name "KV-$Seed" --query "value" -o tsv)
 ArcSp_pwd=$(az keyvault secret show --name "SPpwd" --vault-name "KV-$Seed" --query "value" -o tsv)
@@ -47,6 +49,8 @@ LAWname=$(az deployment sub show --name "CoreDeploy-$Seed" --query properties.ou
 
 echo "Client ID: $ArcSp_id
 Client Secret: $ArcSp_pwd 
+
+Admin Username: $adminUsername
 adminPassword: $adminPassword
 Tenant ID: $MyTenantId 
 Key Vault Name: $KVname 

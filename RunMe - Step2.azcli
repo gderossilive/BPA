@@ -28,6 +28,7 @@ az deployment group create \
           SecretName='SPid' \
           Secret=$ArcSp_id
 
+echo $adminUsername
 echo $adminPassword
 # To onboard on Arc this VM: 
 #   1 - Open an RDP session on the VM

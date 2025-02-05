@@ -6,6 +6,20 @@ ArcSqlVMname=$(az deployment sub show --name "CoreDeploy-$Seed" --query properti
 ArcWinlist="[\"$ArcWinVMname\"]"
 ArcSqllist="[\"$ArcSqlVMname\"]"
 
+# Activate software assurance benefits on the Arc enabled Windows VMs
+az deployment group create \
+     --name "ArcSqlSA-$Seed" \
+     --resource-group $resourceGroupName \
+     --template-file './src/LicenseProfile.bicep' \
+     --parameters \
+          vmName=$ArcSqlVMname 
+az deployment group create \
+     --name "ArcWinSA-$Seed" \
+     --resource-group $resourceGroupName \
+     --template-file './src/LicenseProfile.bicep' \
+     --parameters \
+          vmName=$ArcWinVMname 
+
 ## -------- Setup SQL Server on the Arc enabled VM --------
 # Set the storage account and blob details where to download the SQLServer 2022 ISO
 StorageAccountName="gdrrepo3423"
@@ -31,7 +45,7 @@ az connectedmachine extension create \
      --resource-group $resourceGroupName \
      --type "CustomScriptExtension" \
      --publisher "Microsoft.Compute" \
-     --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/GuestConfiguration/refs/heads/main/Files/IsoSetup.ps1' -OutFile 'c:\\windows\\\temp\\IsoSetup.ps1' \"}" \
+     --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/IsoSetup.ps1' -OutFile 'c:\\windows\\\temp\\IsoSetup.ps1' \"}" \
      --enable-auto-upgrade true
 
 # Use the CustomScript extension on the Arc enabled VM to setup the prerequisites for the SQL Server installation
