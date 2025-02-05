@@ -56,6 +56,7 @@ Configuration ADDomain_NewForest_Config
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName ActiveDirectoryDsc
+    Import-DscResource -ModuleName ADDomain
 
     node $serverName
     {
