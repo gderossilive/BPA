@@ -40,6 +40,7 @@ module windowsserverassessment 'VmExtension.bicep' = {
     type: 'windowsserverassessment'
     Settings: {
       addTaskOnInstallRequested: true
+      autoUpgradeMinorVersion: false
       isEnabled: true
       triggerServerName: VMName
       triggerLogAnalyticsWorkspaceFullId: LAW.id
