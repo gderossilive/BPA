@@ -50,6 +50,7 @@ module windowsserverassessment 'VmExtension.bicep' = {
 
 // Deploy DCR association
 resource DCRA 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = {
+  dependsOn:[windowsserverassessment]
   name: 'windowsserver-dcr-assoc'
   properties: {
     dataCollectionRuleId: DCR_WinBPA.id
