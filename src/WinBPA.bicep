@@ -9,7 +9,7 @@ resource LAW 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
 
 // Deploy AMA extension
 module AMA 'VmExtension.bicep' = {
-  name: 'AMA-${VMName}-${Seed}'
+  name: '${VMName}-AzureMonitorWindowsAgent'
   params: {
     vmName: VMName
     VmExtensionName: 'AzureMonitorWindowsAgent'
@@ -20,7 +20,7 @@ module AMA 'VmExtension.bicep' = {
 
 // Deploy assessmentplatform extension
 module assessmentplatform 'VmExtension.bicep' = {
-  name: 'assessmentplatform-${VMName}-${Seed}'
+  name: '${VMName}-assessmentplatform'
   params: {
     vmName: VMName
     VmExtensionName: 'Aassessmentplatform'
@@ -31,8 +31,7 @@ module assessmentplatform 'VmExtension.bicep' = {
 
 // Deploy windowsserverassessment extension
 module windowsserverassessment 'VmExtension.bicep' = {
-  dependsOn: [assessmentplatform, AMA]
-  name: '${VMName}/windowsserverassessment'
+  name: '${VMName}-windowsserverassessment'
   params: {
     vmName: VMName
     VmExtensionName: 'windowsserverassessment'

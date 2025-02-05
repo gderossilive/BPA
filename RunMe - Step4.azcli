@@ -10,7 +10,8 @@ LawResourceId=$(az monitor log-analytics workspace show --name "LA-$Seed" --reso
 # get the subscription id
 subscriptionId=$(az account show --query id -o tsv)
 
-# Enable the Windows Server Best Practices Assessment on the Arc enabled VM
+## Enable the Windows Server Best Practices Assessment on the Arc enabled VMs
+# Windows VM
 az deployment group create \
      --name "ArcWinBPA-$Seed" \
      --resource-group $resourceGroupName \
@@ -20,6 +21,16 @@ az deployment group create \
           location=$location \
           Seed=$Seed \
 		  VMName=$ArcWinVMname
+# SQL VM
+az deployment group create \
+     --name "ArcSqlBPA-$Seed" \
+     --resource-group $resourceGroupName \
+     --template-file './src/WinBPA.bicep' \
+     --parameters \
+          WorkspaceName=$LAWname \
+          location=$location \
+          Seed=$Seed \
+		  VMName=$ArcSqlVMname
 
 # install the SQL Server extension on the Arc enabled VM
 az connectedmachine extension create --machine-name $ArcSqlVMname --location $location --name "WindowsAgent.SqlServer" --resource-group $resourceGroupName --type "WindowsAgent.SqlServer" --publisher "Microsoft.AzureData" --settings "{\"SqlManagement\":{\"IsEnabled\":true}, \"LicenseType\":\"PAYG\", \"ExcludedSqlInstances\":[\"\"], \"AssessmentSettings\":{\"IsEnabled\":true, \"RunImmediately\":true, \"WorkspaceResourceId\":\"$LawId\", \"WorkspaceLocation\":\"$location\"}}"
