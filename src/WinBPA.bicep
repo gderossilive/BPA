@@ -48,6 +48,10 @@ module windowsserverassessment 'VmExtension.bicep' = {
   }
 }
 
+resource vm 'Microsoft.HybridCompute/machines@2024-11-10-preview' existing = {
+  name: VMName
+}
+
 // Deploy DCR association
 resource DCRA 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = {
   dependsOn:[windowsserverassessment]
@@ -55,6 +59,7 @@ resource DCRA 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = {
   properties: {
     dataCollectionRuleId: DCR_WinBPA.id
   }
+  scope: vm
 }
 
 // Create a custom table in Log Analytics Workspace
