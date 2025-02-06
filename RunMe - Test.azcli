@@ -23,7 +23,7 @@ fi
 read -p "Enter the Seed value: " Seed
 
 # find the secret value in the key vault
-adminUsername='gdradmin'
+adminUsername=$adminUsername
 resourceGroupName="$Seed-Demo"
 adminPassword=$(az keyvault secret show --name "adminPassword" --vault-name "KV-$Seed" --query "value" -o tsv)
 ArcSp_id=$(az keyvault secret show --name "SPid" --vault-name "KV-$Seed" --query "value" -o tsv)

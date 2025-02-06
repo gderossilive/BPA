@@ -24,7 +24,7 @@ az deployment group create \
 # Set the storage account and blob details where to download the SQLServer 2022 ISO
 StorageAccountName="gdrrepo3423"
 ContainerName="iso"
-BlobName="SQLServer2022-x64-ENU.iso"
+BlobName="SQLServer2022-x64-ENU-STD.iso"
 
 # Retrieve the System Managed identity for the Arc enabled VM
 ArcVmManagedIdentity=$(az connectedmachine show --resource-group $Seed-Demo --name $ArcSqlVMname --query identity.principalId --output tsv)

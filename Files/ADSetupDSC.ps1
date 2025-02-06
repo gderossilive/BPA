@@ -12,7 +12,7 @@ param (
 )
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 Install-Module -Name ActiveDirectoryDsc -Force
-Install-Module -Name ADDomain -Force
+
 
 $secpassword = ConvertTo-SecureString -String $password -AsPlainText -Force
 $domainCred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secpassword
