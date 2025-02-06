@@ -13,23 +13,21 @@ subscriptionId=$(az account show --query id -o tsv)
 ## Enable the Windows Server Best Practices Assessment on the Arc enabled VMs
 # Windows VM
 az deployment group create \
-     --name "ArcWinBPA-$Seed" \
+     --name "ArcWinBPA-$ArcWinVMname-$Seed" \
      --resource-group $resourceGroupName \
      --template-file './src/WinBPA.bicep' \
      --parameters \
           WorkspaceName=$LAWname \
           location=$location \
-          Seed=$Seed \
 		  VMName=$ArcWinVMname
 # SQL VM
 az deployment group create \
-     --name "ArcSqlBPA-$Seed" \
+     --name "ArcWinBPA-$ArcSqlVMname-$Seed" \
      --resource-group $resourceGroupName \
      --template-file './src/WinBPA.bicep' \
      --parameters \
           WorkspaceName=$LAWname \
           location=$location \
-          Seed=$Seed \
 		  VMName=$ArcSqlVMname
 
 # install the SQL Server extension on the Arc enabled VM
@@ -104,26 +102,6 @@ az connectedmachine extension create \
      --settings "{\"enableAMA\": \"true\"}" \
      --enable-auto-upgrade true
 
-# setup the Best Practice Assessment Platform on the Arc enabled VM
-az connectedmachine extension create \
-	--machine-name $ArcWinVMname \
-	--location $location \
-	--name 'assessmentplatform' \
-	--resource-group $resourceGroupName \
-	--type "assessmentplatform" \
-	--publisher "microsoft.serviceshub" \
-	--enable-auto-upgrade true
-
-# setup the Windows Server Best Practice Assessment on the Arc enabled VM
-az connectedmachine extension create \
-	--machine-name $ArcWinVMname \
-	--location $location \
-	--name 'windowsserverassessment' \
-	--resource-group $resourceGroupName \
-	--type "windowsserverassessment" \
-	--publisher "microsoft.serviceshub" \
-	--enable-auto-upgrade true
-     --settings "{\"isEnabled\": \"true\",\"addTaskOnInstallRequested\": \"true\",\"triggerRequested\": \"true\",\"triggerServerName\": \"$ArcWinVMname\",\"triggerLogAnalyticsWorkspaceFullId\": \"$LawResourceId\",\"triggerLogAnalyticsWorkspaceId\": \"$LawId\",\"triggerLogAnalyticsWorkspaceName\": \"$LAWname\"}" \
 
 # assess the patches on the Arc enabled VM
 az connectedmachine assess-patches -g $resourceGroupName -n $ArcWinVMname

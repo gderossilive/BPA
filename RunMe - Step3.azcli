@@ -102,8 +102,8 @@ az connectedmachine assess-patches -g $resourceGroupName -n $ArcSqlVMname
 
 # RDP to the SQL Server VM via Arc
 echo $adminPassword
-az ssh arc --subscription $MySubscriptionId --resource-group $resourceGroupName --name $ArcSqlVMname --local-user gdradmin --rdp -- -o StrictHostKeyChecking=no
-az ssh arc --subscription $MySubscriptionId --resource-group $resourceGroupName --name $ArcWinVMname --local-user gdradmin --rdp -- -o StrictHostKeyChecking=no
+az ssh arc --subscription $MySubscriptionId --resource-group $resourceGroupName --name $ArcSqlVMname --local-user $adminUsername --rdp -- -o StrictHostKeyChecking=no
+az ssh arc --subscription $MySubscriptionId --resource-group $resourceGroupName --name $ArcWinVMname --local-user $adminUsername --rdp -- -o StrictHostKeyChecking=no
 
 
 

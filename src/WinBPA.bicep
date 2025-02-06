@@ -1,7 +1,7 @@
 param WorkspaceName string
 param location string
-param Seed string
 param VMName string
+param Date string = utcNow('yyyy-MM-ddTHH:mm:ssZ')
 
 resource LAW 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   name: WorkspaceName
@@ -23,7 +23,7 @@ module assessmentplatform 'VmExtension.bicep' = {
   name: '${VMName}-assessmentplatform'
   params: {
     vmName: VMName
-    VmExtensionName: 'Aassessmentplatform'
+    VmExtensionName: 'assessmentplatform'
     publisher: 'microsoft.serviceshub'
     type: 'assessmentplatform'
   }
@@ -39,8 +39,11 @@ module windowsserverassessment 'VmExtension.bicep' = {
     type: 'windowsserverassessment'
     Settings: {
       addTaskOnInstallRequested: true
-      autoUpgradeMinorVersion: false
       isEnabled: true
+      triggerRequested: true
+      createdDate: Date
+      lasttriggeredDate: Date
+      lastupdatedDate: Date
       triggerServerName: VMName
       triggerLogAnalyticsWorkspaceFullId: LAW.id
       triggerLogAnalyticsWorkspaceId: LAW.properties.customerId
