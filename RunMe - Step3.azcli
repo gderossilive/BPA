@@ -6,20 +6,6 @@ ArcSqlVMname=$(az deployment sub show --name "CoreDeploy-$Seed" --query properti
 ArcWinlist="[\"$ArcWinVMname\"]"
 ArcSqllist="[\"$ArcSqlVMname\"]"
 
-# Activate software assurance benefits on the Arc enabled Windows VMs
-az deployment group create \
-     --name "ArcSqlSA-$Seed" \
-     --resource-group $resourceGroupName \
-     --template-file './src/LicenseProfile.bicep' \
-     --parameters \
-          vmName=$ArcSqlVMname 
-az deployment group create \
-     --name "ArcWinSA-$Seed" \
-     --resource-group $resourceGroupName \
-     --template-file './src/LicenseProfile.bicep' \
-     --parameters \
-          vmName=$ArcWinVMname 
-
 ## -------- Setup SQL Server on the Arc enabled VM --------
 # Set the storage account and blob details where to download the SQLServer 2022 ISO
 StorageAccountName="gdrrepo3423"
@@ -93,10 +79,6 @@ az connectedmachine extension create \
      --publisher "Microsoft.Compute" \
      --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/ADSetupDSC.ps1' -OutFile 'c:\\windows\\\temp\\ADSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\ADSetupDSC.ps1 -username $adminUsername -password $adminPassword -serverName $ArcWinVMname \"}" \
      --enable-auto-upgrade true
-
-# assess the patches on the Arc enabled VM
-az connectedmachine assess-patches -g $resourceGroupName -n $ArcWinVMname
-az connectedmachine assess-patches -g $resourceGroupName -n $ArcSqlVMname
 
 ############# --------- END OF FILE --------- #############
 

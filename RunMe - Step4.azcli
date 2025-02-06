@@ -10,6 +10,24 @@ LawResourceId=$(az monitor log-analytics workspace show --name "LA-$Seed" --reso
 # get the subscription id
 subscriptionId=$(az account show --query id -o tsv)
 
+# Activate software assurance benefits on the Arc enabled Windows VMs
+az deployment group create \
+     --name "ArcSqlSA-$Seed" \
+     --resource-group $resourceGroupName \
+     --template-file './src/LicenseProfile.bicep' \
+     --parameters \
+          vmName=$ArcSqlVMname 
+az deployment group create \
+     --name "ArcWinSA-$Seed" \
+     --resource-group $resourceGroupName \
+     --template-file './src/LicenseProfile.bicep' \
+     --parameters \
+          vmName=$ArcWinVMname 
+
+# assess the patches on the Arc enabled VM
+az connectedmachine assess-patches -g $resourceGroupName -n $ArcWinVMname
+az connectedmachine assess-patches -g $resourceGroupName -n $ArcSqlVMname
+
 ## Enable the Windows Server Best Practices Assessment on the Arc enabled VMs
 # Windows VM
 az deployment group create \
