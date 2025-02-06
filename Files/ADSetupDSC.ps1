@@ -57,7 +57,6 @@ Configuration ADDomain_NewForest_Config
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName ActiveDirectoryDsc
-    Import-DscResource -ModuleName ADDomain
 
     node $serverName
     {
@@ -99,7 +98,7 @@ ADDomain_NewForest_Config -Credential $domainCred -ConfigurationData $ConfigData
 Write-Host "Setting up LCM to decrypt credentials..."
 Set-DscLocalConfigurationManager .\ADDomain_NewForest_Config -Verbose
 
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 50
 
 Write-Host "Starting Configuration..."
 Start-DscConfiguration -Path .\ADDomain_NewForest_Config -Wait -Verbose -Force
