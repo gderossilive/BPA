@@ -30,48 +30,41 @@ az deployment group create \
           location=$location \
 		  VMName=$ArcSqlVMname
 
-# install the SQL Server extension on the Arc enabled VM
-az connectedmachine extension create --machine-name $ArcSqlVMname --location $location --name "WindowsAgent.SqlServer" --resource-group $resourceGroupName --type "WindowsAgent.SqlServer" --publisher "Microsoft.AzureData" --settings "{\"SqlManagement\":{\"IsEnabled\":true}, \"LicenseType\":\"PAYG\", \"ExcludedSqlInstances\":[\"\"], \"AssessmentSettings\":{\"IsEnabled\":true, \"RunImmediately\":true, \"WorkspaceResourceId\":\"$LawId\", \"WorkspaceLocation\":\"$location\"}}"
+# install the SQL Server extension on the Arc enabled VM and setup the SQL Best Practices Assessment
+#az connectedmachine extension create --machine-name $ArcSqlVMname --location $location --name "WindowsAgent.SqlServer" --resource-group $resourceGroupName --type "WindowsAgent.SqlServer" --publisher "Microsoft.AzureData" --settings "{\"SqlManagement\":{\"IsEnabled\":true}, \"LicenseType\":\"PAYG\", \"ExcludedSqlInstances\":[\"\"], \"AssessmentSettings\":{\"IsEnabled\":true, \"RunImmediately\":true, \"WorkspaceResourceId\":\"$LawId\", \"WorkspaceLocation\":\"$location\"}}"
+az deployment group create \
+     --name "ArcSqlBPA-$ArcSqlVMname-$Seed" \
+     --resource-group $resourceGroupName \
+     --template-file './src/SqlBPA.bicep' \
+     --parameters \
+          WorkspaceName=$LAWname \
+          location=$location \
+		  VMName=$ArcSqlVMname
+	
+# Setup the VM Isight extension on the Arc enabled VM
+az deployment group create \
+     --name "ArcVMInsights-$ArcSqlVMname-$Seed" \
+     --resource-group $resourceGroupName \
+     --template-file './src/VMInsights.bicep' \
+     --parameters \
+          WorkspaceName=$LAWname \
+          location=$location \
+		  VMName=$ArcSqlVMname
 
-# Enable the LeastPrivilege feature flag on the SQL Server Arc enabled VM
-# az extension list -o table
-# az extension add --name arcdata
-# az sql server-arc extension feature-flag set --name LeastPrivilege --enable true --resource-group $resourceGroupName --machine-name $ArcSqlVMname
-
-# Create the policy assignment for the SQL Server Best Practices Assessment to configure it automatically
-# az policy assignment create --scope "/subscriptions/$MySubscriptionId/resourceGroups/$resourceGroupName" \
-#     --policy "/providers/Microsoft.Authorization/policyDefinitions/SQLBestPracticesAssessment" \
-#     --params "{ \"effect\": \"DeployIfNotExists\", \"laWorkspaceId\": \"$LAWname\", \"laWorkspaceLocation\": \"$location\", \"isEnabled\": \"$True\" }"
-
-# Enable SQL Best Practice Assessment on the Arc enabled VM
-#az sql vm update --enable-assessment true --workspace-name $LAWname --workspace-rg $resourceGroupName -g $resourceGroupName --agent-rg $resourceGroupName -n $ArcSqlVMname
-
-# Enable Windows Best Practice Assessment on the Arc enabled VM
-## setup the API call to activate the SA benefits
-uri="https://management.azure.com/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.HybridCompute/machines/$ArcWinVMname/licenseProfiles/default?api-version=2023-10-03-preview"
-contentType="application/json"
-data="{\"location\": \"$location\", \"properties\": {\"softwareAssurance\": {\"softwareAssuranceCustomer\": true}}}"
-
-echo $uri
-echo $contentType
-echo $data
-
-## Call the REST API to activate the SA benefits
-response=$(az rest --method PUT --uri $uri --headers "Content-Type=$contentType" --body "$data")
-
-echo $response
-
-## Check if the response is successful
-if [ $response -eq 0 ]; then
-	echo "$ArcWinVMname SA benefits activated"
-else
-	StatusCode=$(echo $response | python3 -c "import sys, json; response = json.load(sys.stdin); print(response['error']['code'])")
-	StatusException=$(echo $response | python3 -c "import sys, json; response = json.load(sys.stdin); print(response['error']['message'])")
-	echo "$ArcWinVMname StatusCode: $StatusCode StatusDescription: $StatusException"
-	echo "$ArcWinVMname StatusCode: $StatusCode StatusDescription: $StatusException" >> output.txt
-fi
+az deployment group create \
+     --name "ArcVMInsights-$ArcWinVMname-$Seed" \
+     --resource-group $resourceGroupName \
+     --template-file './src/VMInsights.bicep' \
+     --parameters \
+          WorkspaceName=$LAWname \
+          location=$location \
+		  VMName=$ArcWinVMname
 
 
+
+# --------------- END OF FILE ---------------
+
+# install the Windows AMA extension on the Arc enabled VM
 az connectedmachine extension create \
 	--machine-name $ArcWinVMname \
 	--location $location \
@@ -81,16 +74,6 @@ az connectedmachine extension create \
 	--publisher "Microsoft.Azure.Monitor" \
 	--enable-auto-upgrade true
 
-# Create Data Collection Endpoint
-
-# create Log Analytics Custom Table
-
-# Create Data Collection Rule for the Arc enabled VM to collect Custom Text Logs
- 
-
-
-
-# --------------- END OF FILE ---------------
 # setup the dependency agent on the Arc enabled VM
 az connectedmachine extension create \
      --machine-name $ArcWinVMname \
@@ -106,5 +89,3 @@ az connectedmachine extension create \
 # assess the patches on the Arc enabled VM
 az connectedmachine assess-patches -g $resourceGroupName -n $ArcWinVMname
 
-
-az resource update --ids '//subscriptions/11004def-5ee3-4417-9560-89b475a99fb8/resourceGroups/xmsbht-Demo/providers/Microsoft.AzureArcData/SqlServerInstances/SQL-1' --set 'properties.monitoring.enabled=true' --api-version 2023-09-01-preview
