@@ -79,7 +79,7 @@ az connectedmachine extension create \
      --resource-group $resourceGroupName \
      --type "CustomScriptExtension" \
      --publisher "Microsoft.Compute" \
-     --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/SqlServerSetupDSC.ps1' -OutFile 'c:\\windows\\\temp\\SqlServerSetupDSC.ps1'; powershell -File c:\\windows\\\temp\\SqlServerSetupDSC.ps1  -Force \"}" \
+     --settings "{\"commandToExecute\":\"powershell Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/gderossilive/BPA/refs/heads/main/Files/AdventureWorks.ps1' -OutFile 'c:\\windows\\\temp\\AdventureWorks.ps1'; powershell -File c:\\windows\\\temp\\AdventureWorks.ps1 -serverInstance $ArcSqlVMname  -Force \"}" \
      --enable-auto-upgrade true
 
 ## -------- Setup Active Directory on the Arc enabled VM --------
