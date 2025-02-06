@@ -10,8 +10,10 @@ param (
     [Parameter(Mandatory )] [ValidateNotNullOrEmpty()][string]
     $serverName
 )
+
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 Install-Module -Name ActiveDirectoryDsc -Force
+
 
 
 $secpassword = ConvertTo-SecureString -String $password -AsPlainText -Force
@@ -20,7 +22,7 @@ $domainCred = new-object -typename System.Management.Automation.PSCredential -ar
 # note: These steps need to be performed in an Administrator PowerShell session
 $cert = New-SelfSignedCertificate -Type DocumentEncryptionCertLegacyCsp -DnsName 'DscEncryptionCert' -HashAlgorithm SHA256
 # export the private key certificate
-$mypwd = ConvertTo-SecureString -String $password -Force -AsPlainText
+$mypwd = ConvertTo-SecureString -String 'P@ssword1' -Force -AsPlainText
 $cert | Export-PfxCertificate -FilePath "$env:temp\DscPrivateKey.pfx" -Password $mypwd -Force
 # remove the private key certificate from the node but keep the public key certificate
 $cert | Export-Certificate -FilePath "$env:temp\DscPublicKey.cer" -Force
@@ -57,6 +59,7 @@ Configuration ADDomain_NewForest_Config
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -ModuleName ActiveDirectoryDsc
+
 
     node $serverName
     {
