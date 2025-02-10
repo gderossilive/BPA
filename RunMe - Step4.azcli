@@ -78,7 +78,20 @@ az deployment group create \
           location=$location \
 		  VMName=$ArcWinVMname
 
+# Setup the Windows Admin Center extension on the Arc enabled VM
+az deployment group create \
+     --name "ArcWAC-$ArcWinVMname-$Seed" \
+     --resource-group $resourceGroupName \
+     --template-file './src/WAC.bicep' \
+     --parameters \
+          VMName=$ArcWinVMname
 
+az deployment group create \
+     --name "ArcWAC-$ArcSqlVMname-$Seed" \
+     --resource-group $resourceGroupName \
+     --template-file './src/WAC.bicep' \
+     --parameters \
+          VMName=$ArcSqlVMname
 
 # --------------- END OF FILE ---------------
 

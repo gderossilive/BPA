@@ -8,7 +8,7 @@ resource LAW 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   name: WorkspaceName
 }
 
-// Create a custom table in Log Analytics Workspace
+/* Create a custom table in Log Analytics Workspace
 resource SqlTable 'Microsoft.OperationalInsights/workspaces/tables@2023-09-01' = {
   parent: LAW
   name: 'SqlAssessment_CL'
@@ -27,7 +27,7 @@ resource SqlTable 'Microsoft.OperationalInsights/workspaces/tables@2023-09-01' =
       ]
     }
   }
-}
+}*/
 
 module SqlExtension 'VmExtension.bicep' = {
   name: '${VMName}-WindowsAgent.SqlServer'
